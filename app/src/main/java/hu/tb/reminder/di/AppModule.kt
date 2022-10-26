@@ -9,10 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import hu.tb.reminder.data.data_source.TaskDatabase
 import hu.tb.reminder.data.repository.TaskRepositoryImpl
 import hu.tb.reminder.domain.repository.TaskRepository
-import hu.tb.reminder.domain.use_case.DeleteTask
-import hu.tb.reminder.domain.use_case.GetTasks
-import hu.tb.reminder.domain.use_case.SaveTask
-import hu.tb.reminder.domain.use_case.TaskUseCase
+import hu.tb.reminder.domain.use_case.*
 import javax.inject.Singleton
 
 @Module
@@ -41,7 +38,8 @@ object AppModule {
         return TaskUseCase(
             getTasks = GetTasks(repository),
             deleteTask = DeleteTask(repository),
-            saveTask = SaveTask(repository)
+            saveTask = SaveTask(repository),
+            getTask = GetTask(repository),
         )
     }
 }

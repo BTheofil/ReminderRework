@@ -1,19 +1,22 @@
 package hu.tb.reminder.presentation.taskList
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.compose.runtime.livedata.observeAsState
 import hu.tb.reminder.domain.model.TaskEntity
+import hu.tb.reminder.presentation.route.Routes
 
 @Composable
 fun TaskList(
@@ -26,7 +29,7 @@ fun TaskList(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate("addTask")
+                    navController.navigate(Routes.ADD_TASK.route)
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add note")
             }
@@ -42,8 +45,13 @@ fun TaskList(
                 key = { task -> task.id!!}
             ){ task ->
                 TaskItem(
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate(Routes.ADD_TASK.route + "?taskId=${task.id}")
+                        },
                     task = task,
-                    onCheckedChange = { checked ->  taskListViewModel.changeTaskChecked(task, checked)}
+                    onCheckedChange = { checked ->  taskListViewModel.changeTaskChecked(task, checked)},
+                    onDeleteTask = { taskListViewModel.deleteTask(task) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -55,7 +63,8 @@ fun TaskList(
 fun TaskItem(
     modifier: Modifier = Modifier,
     task: TaskEntity,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onDeleteTask: () -> Unit
 ){
     Card(
         modifier = modifier
@@ -73,10 +82,22 @@ fun TaskItem(
                 Spacer(modifier = modifier.height(8.dp))
                 Text(text = task.details)
             }
-            Checkbox(
-                checked = task.isDone,
-                onCheckedChange = onCheckedChange
-            )
+            Column(
+                modifier = Modifier,
+            ) {
+                IconButton(
+                    onClick = onDeleteTask
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                    "Close"
+                    )
+                }
+                Checkbox(
+                    checked = task.isDone,
+                    onCheckedChange = onCheckedChange
+                )
+            }
         }
 
     }

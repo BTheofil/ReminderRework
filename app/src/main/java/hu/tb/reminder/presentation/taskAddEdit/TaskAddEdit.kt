@@ -1,7 +1,10 @@
-package hu.tb.reminder.presentation.addTask
+package hu.tb.reminder.presentation.taskAddEdit
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,21 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import hu.tb.reminder.domain.model.TaskEntity
 
 @Composable
-fun AddTaskScreen(
-    viewModel: AddTaskViewModel = hiltViewModel(),
+fun TaskAddEditScreen(
+    viewModel: TaskAddEditViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
-    var titleText by remember { mutableStateOf("") }
-    var descriptionText by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -37,7 +35,7 @@ fun AddTaskScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, "")
+                        Icon(Icons.Filled.ArrowBack, "Back")
                     }
                 },
 
@@ -47,40 +45,38 @@ fun AddTaskScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.saveTask(
-                        TaskEntity(
-                            title = titleText,
-                            details = descriptionText,
-                            isDone = false
-                        )
-                    )
+                    viewModel.onEvent(TaskAddEditEvent.OnSaveTodoClick)
+                    navController.popBackStack()
                 },
             ) {
                 Icon(Icons.Rounded.Save, contentDescription = "Save")
             }
         }
     ) {
-        AddTaskForm(
-            titleText = titleText,
-            descriptionText = descriptionText,
-            onTitleValueChange = { titleText = it },
-            onDescriptionValueChange = { descriptionText = it },
+        TaskAddEditForm(
+            titleText = viewModel.title,
+            descriptionText = viewModel.description,
+            onTitleValueChange = { viewModel.onEvent(TaskAddEditEvent.OnTitleChange(it)) },
+            onDescriptionValueChange = { viewModel.onEvent(TaskAddEditEvent.OnDescriptionChange(it)) },
         )
     }
 }
 
 @Composable
-private fun AddTaskForm(
+private fun TaskAddEditForm(
     titleText: String,
     descriptionText: String,
     onTitleValueChange: (String) -> Unit,
     onDescriptionValueChange: (String) -> Unit,
 ) {
-    var isFocused by remember { mutableStateOf(true) }
+    var isTitleFocused by remember { mutableStateOf(true) }
+    var isDescriptionFocused by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(16.dp)
+            .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
@@ -96,7 +92,7 @@ private fun AddTaskForm(
             )
             BasicTextField(
                 modifier = Modifier.onFocusChanged { focusState ->
-                    isFocused = when {
+                    isTitleFocused = when {
                         focusState.isFocused -> {
                             true
                         }
@@ -111,7 +107,7 @@ private fun AddTaskForm(
                 textStyle = TextStyle.Default.copy(fontSize = 18.sp),
                 decorationBox = { innerTextField ->
                     Row(modifier = Modifier) {
-                        if (!isFocused && titleText.isEmpty()) {
+                        if (!isTitleFocused && titleText.isEmpty()) {
                             Text("Title your task...")
                         }
                         innerTextField()
@@ -127,10 +123,30 @@ private fun AddTaskForm(
         )
         BasicTextField(
             modifier = Modifier
-                .padding(start = 24.dp)
-                .background(Color.Red),
+                .onFocusChanged { focusState ->
+                    isDescriptionFocused = when {
+                        focusState.isFocused -> {
+                            true
+                        }
+                        else -> {
+                            false
+                        }
+                    }
+                }
+                .padding(
+                    start = 24.dp,
+                    top = 8.dp
+                ),
             value = descriptionText,
             onValueChange = onDescriptionValueChange,
+            decorationBox = { innerTextField ->
+                Row(modifier = Modifier) {
+                    if (!isDescriptionFocused && descriptionText.isEmpty()) {
+                        Text("Description your task...")
+                    }
+                    innerTextField()
+                }
+            }
         )
     }
 }

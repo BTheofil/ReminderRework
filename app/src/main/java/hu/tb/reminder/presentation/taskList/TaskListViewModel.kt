@@ -26,4 +26,10 @@ class TaskListViewModel @Inject constructor(
             ))
         }
     }
+
+    fun deleteTask(taskEntity: TaskEntity){
+        viewModelScope.launch {
+            taskUseCase.deleteTask(taskEntity)
+        }
+    }
 }
