@@ -21,13 +21,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun TaskAddEditScreen(
     viewModel: TaskAddEditViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    val scaffoldState = rememberScaffoldState()
+
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -46,20 +50,34 @@ fun TaskAddEditScreen(
             FloatingActionButton(
                 onClick = {
                     viewModel.onEvent(TaskAddEditEvent.OnSaveTodoClick)
-                    navController.popBackStack()
                 },
             ) {
                 Icon(Icons.Rounded.Save, contentDescription = "Save")
             }
+        },
+        content = { innerPadding ->
+            LaunchedEffect(key1 = true) {
+                viewModel.eventFlow.collectLatest { event ->
+                    when(event) {
+                        is TaskAddEditState.ShowSnackBar -> {
+                            scaffoldState.snackbarHostState.showSnackbar(
+                                message = "Title can not be empty"
+                            )
+                        }
+                        is TaskAddEditState.SaveNote -> {
+                            navController.navigateUp()
+                        }
+                    }
+                }
+            }
+            TaskAddEditForm(
+                titleText = viewModel.title,
+                descriptionText = viewModel.description,
+                onTitleValueChange = { viewModel.onEvent(TaskAddEditEvent.OnTitleChange(it)) },
+                onDescriptionValueChange = { viewModel.onEvent(TaskAddEditEvent.OnDescriptionChange(it)) },
+            )
         }
-    ) {
-        TaskAddEditForm(
-            titleText = viewModel.title,
-            descriptionText = viewModel.description,
-            onTitleValueChange = { viewModel.onEvent(TaskAddEditEvent.OnTitleChange(it)) },
-            onDescriptionValueChange = { viewModel.onEvent(TaskAddEditEvent.OnDescriptionChange(it)) },
-        )
-    }
+    )
 }
 
 @Composable

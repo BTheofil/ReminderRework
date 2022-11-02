@@ -12,6 +12,8 @@ import hu.tb.reminder.domain.use_case.TaskUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import hu.tb.reminder.presentation.taskAddEdit.TaskAddEditEvent.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class TaskAddEditViewModel @Inject constructor(
@@ -27,6 +29,9 @@ class TaskAddEditViewModel @Inject constructor(
 
     var task by mutableStateOf<TaskEntity?>(null)
         private set
+
+    private val _eventFlow = MutableSharedFlow<TaskAddEditState>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         savedStateHandle.get<String>("taskId")?.let { taskId ->
@@ -52,14 +57,20 @@ class TaskAddEditViewModel @Inject constructor(
 
             is OnSaveTodoClick -> {
                 viewModelScope.launch {
-                    taskUseCase.saveTask(
-                        TaskEntity(
-                            id = task?.id,
-                            title = title,
-                            details = description,
-                            isDone = false
+                    if(title.isNotEmpty() ){
+                        taskUseCase.saveTask(
+                            TaskEntity(
+                                id = task?.id,
+                                title = title,
+                                details = description,
+                                isDone = false
+                            )
                         )
-                    )
+                        _eventFlow.emit(TaskAddEditState.SaveNote)
+                    } else {
+                        _eventFlow.emit(TaskAddEditState.ShowSnackBar)
+                    }
+
                 }
             }
         }
