@@ -81,6 +81,7 @@ fun TaskItem(
                 Text(text = task.title)
                 Spacer(modifier = modifier.height(8.dp))
                 Text(text = task.details)
+                Text(text = task.expireDate)
             }
             Column(
                 modifier = Modifier,

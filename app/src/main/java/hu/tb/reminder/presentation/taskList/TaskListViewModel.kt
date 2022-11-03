@@ -22,7 +22,8 @@ class TaskListViewModel @Inject constructor(
                 id = item.id,
                 title = item.title,
                 details = item.details,
-                isDone = checked
+                isDone = checked,
+                expireDate = item.expireDate
             ))
         }
     }

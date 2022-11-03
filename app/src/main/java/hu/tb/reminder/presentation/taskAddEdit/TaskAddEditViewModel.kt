@@ -14,6 +14,9 @@ import javax.inject.Inject
 import hu.tb.reminder.presentation.taskAddEdit.TaskAddEditEvent.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 @HiltViewModel
 class TaskAddEditViewModel @Inject constructor(
@@ -30,6 +33,9 @@ class TaskAddEditViewModel @Inject constructor(
     var task by mutableStateOf<TaskEntity?>(null)
         private set
 
+    var expirationDate by mutableStateOf<LocalDate?>(null)
+        private set
+
     private val _eventFlow = MutableSharedFlow<TaskAddEditState>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -40,6 +46,7 @@ class TaskAddEditViewModel @Inject constructor(
                     task = taskEntity
                     title = taskEntity.title
                     description = taskEntity.details
+                    expirationDate =  LocalDate.parse(taskEntity.expireDate, DateTimeFormatter.ofPattern("yyyy-MMM-dd").withLocale(Locale.ENGLISH))
                 }
             }
         }
@@ -63,7 +70,8 @@ class TaskAddEditViewModel @Inject constructor(
                                 id = task?.id,
                                 title = title,
                                 details = description,
-                                isDone = false
+                                isDone = false,
+                                expireDate = expirationDate.toString()
                             )
                         )
                         _eventFlow.emit(TaskAddEditState.SaveNote)
@@ -72,6 +80,10 @@ class TaskAddEditViewModel @Inject constructor(
                     }
 
                 }
+            }
+
+            is OnExpirationDateChange -> {
+                expirationDate = event.expirationDate
             }
         }
     }

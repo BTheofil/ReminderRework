@@ -1,5 +1,6 @@
 package hu.tb.reminder.presentation.taskAddEdit
 
+import hu.tb.reminder.presentation.taskAddEdit.components.DatePicker
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Save
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -21,7 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.flow.collectLatest
+import java.time.LocalDate
 
 @Composable
 fun TaskAddEditScreen(
@@ -33,7 +37,7 @@ fun TaskAddEditScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = {
                     Text(text = "Add new task")
                 },
@@ -58,7 +62,7 @@ fun TaskAddEditScreen(
         content = { innerPadding ->
             LaunchedEffect(key1 = true) {
                 viewModel.eventFlow.collectLatest { event ->
-                    when(event) {
+                    when (event) {
                         is TaskAddEditState.ShowSnackBar -> {
                             scaffoldState.snackbarHostState.showSnackbar(
                                 message = "Title can not be empty"
@@ -71,10 +75,21 @@ fun TaskAddEditScreen(
                 }
             }
             TaskAddEditForm(
+                modifier = Modifier.padding(innerPadding),
                 titleText = viewModel.title,
                 descriptionText = viewModel.description,
+                expirationDateText = viewModel.expirationDate.toString(),
+                expirationDate = {
+                    viewModel.onEvent(TaskAddEditEvent.OnExpirationDateChange(it))
+                },
                 onTitleValueChange = { viewModel.onEvent(TaskAddEditEvent.OnTitleChange(it)) },
-                onDescriptionValueChange = { viewModel.onEvent(TaskAddEditEvent.OnDescriptionChange(it)) },
+                onDescriptionValueChange = {
+                    viewModel.onEvent(
+                        TaskAddEditEvent.OnDescriptionChange(
+                            it
+                        )
+                    )
+                },
             )
         }
     )
@@ -82,8 +97,11 @@ fun TaskAddEditScreen(
 
 @Composable
 private fun TaskAddEditForm(
+    modifier: Modifier,
     titleText: String,
     descriptionText: String,
+    expirationDateText: String,
+    expirationDate: (date: LocalDate) -> Unit,
     onTitleValueChange: (String) -> Unit,
     onDescriptionValueChange: (String) -> Unit,
 ) {
@@ -91,13 +109,33 @@ private fun TaskAddEditForm(
     var isDescriptionFocused by remember { mutableStateOf(true) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
             .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
+        val dialogState = rememberMaterialDialogState()
+        MaterialDialog(
+            dialogState = dialogState,
+            buttons = {
+                positiveButton("Ok")
+                negativeButton("Cancel")
+            }
+        ) {
+            datepicker(
+                onDateChange = expirationDate
+            )
+        }
+
+        DatePicker(
+            selectedDate = expirationDateText,
+            onClick = {
+                dialogState.show()
+            }
+        )
+
         Row(
             modifier = Modifier,
             horizontalArrangement = Arrangement.Center

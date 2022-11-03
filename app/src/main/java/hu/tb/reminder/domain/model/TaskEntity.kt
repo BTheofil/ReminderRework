@@ -9,4 +9,5 @@ data class TaskEntity(
     val title: String,
     val details: String,
     val isDone: Boolean,
+    val expireDate: String,
 )
