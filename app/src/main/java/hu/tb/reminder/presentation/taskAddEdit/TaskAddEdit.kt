@@ -1,6 +1,5 @@
 package hu.tb.reminder.presentation.taskAddEdit
 
-import hu.tb.reminder.presentation.taskAddEdit.components.DatePicker
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,9 +22,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import hu.tb.reminder.presentation.taskAddEdit.components.OpenDialogPicker
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun TaskAddEditScreen(
@@ -82,6 +84,10 @@ fun TaskAddEditScreen(
                 expirationDate = {
                     viewModel.onEvent(TaskAddEditEvent.OnExpirationDateChange(it))
                 },
+                expirationTimeText = viewModel.expirationTime.toString(),
+                expirationTime = {
+                    viewModel.onEvent(TaskAddEditEvent.OnExpirationTimeChange(it))
+                },
                 onTitleValueChange = { viewModel.onEvent(TaskAddEditEvent.OnTitleChange(it)) },
                 onDescriptionValueChange = {
                     viewModel.onEvent(
@@ -101,7 +107,9 @@ private fun TaskAddEditForm(
     titleText: String,
     descriptionText: String,
     expirationDateText: String,
-    expirationDate: (date: LocalDate) -> Unit,
+    expirationTimeText: String,
+    expirationDate: (LocalDate) -> Unit,
+    expirationTime: (LocalTime) -> Unit,
     onTitleValueChange: (String) -> Unit,
     onDescriptionValueChange: (String) -> Unit,
 ) {
@@ -129,10 +137,30 @@ private fun TaskAddEditForm(
             )
         }
 
-        DatePicker(
+        val dialogTimeState = rememberMaterialDialogState()
+        MaterialDialog(
+            dialogState = dialogTimeState,
+            buttons = {
+                positiveButton("Ok")
+                negativeButton("Cancel")
+            }
+        ) {
+            timepicker(
+                onTimeChange = expirationTime
+            )
+        }
+
+        OpenDialogPicker(
             selectedDate = expirationDateText,
             onClick = {
                 dialogState.show()
+            }
+        )
+
+        OpenDialogPicker(
+            selectedDate = expirationTimeText,
+            onClick = {
+                dialogTimeState.show()
             }
         )
 

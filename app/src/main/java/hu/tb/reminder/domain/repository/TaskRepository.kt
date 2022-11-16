@@ -9,7 +9,7 @@ interface TaskRepository {
 
     suspend fun getTaskById(id: Int): TaskEntity?
 
-    suspend fun insertTask(taskEntity: TaskEntity)
+    suspend fun insertTask(taskEntity: TaskEntity): Long
 
     suspend fun deleteTask(taskEntity: TaskEntity)
 }

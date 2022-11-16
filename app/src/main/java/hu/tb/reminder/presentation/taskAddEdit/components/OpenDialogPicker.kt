@@ -18,7 +18,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 
 @Composable
-fun DatePicker(
+fun OpenDialogPicker(
     selectedDate: String,
     onClick: () -> Unit
 ) {
@@ -39,14 +39,14 @@ fun DatePicker(
                 .padding(16.dp)
         ) {
 
-            val (lable, iconView) = createRefs()
+            val (label, iconView) = createRefs()
 
             Text(
                 text = selectedDate,
                 color = MaterialTheme.colors.onSurface,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .constrainAs(lable) {
+                    .constrainAs(label) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)

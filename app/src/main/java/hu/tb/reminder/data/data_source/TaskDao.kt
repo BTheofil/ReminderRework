@@ -14,7 +14,7 @@ interface TaskDao {
     suspend fun getTaskById(id: Int): TaskEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNote(taskEntity: TaskEntity)
+    suspend fun insertNote(taskEntity: TaskEntity): Long
 
     @Delete
     suspend fun deleteNote(taskEntity: TaskEntity)

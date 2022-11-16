@@ -10,4 +10,5 @@ data class TaskEntity(
     val details: String,
     val isDone: Boolean,
     val expireDate: String,
-)
+    val expireTime: String,
+): java.io.Serializable

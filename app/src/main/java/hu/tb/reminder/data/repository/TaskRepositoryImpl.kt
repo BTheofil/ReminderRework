@@ -17,7 +17,7 @@ class TaskRepositoryImpl(
         return dao.getTaskById(id)
     }
 
-    override suspend fun insertTask(taskEntity: TaskEntity) {
+    override suspend fun insertTask(taskEntity: TaskEntity): Long {
         return dao.insertNote(taskEntity)
     }
 

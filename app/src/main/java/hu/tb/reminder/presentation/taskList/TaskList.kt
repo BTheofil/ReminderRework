@@ -12,11 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import hu.tb.reminder.domain.model.TaskEntity
 import hu.tb.reminder.presentation.route.Routes
+import hu.tb.reminder.presentation.taskAddEdit.notify.NotificationService
 
 @Composable
 fun TaskList(
@@ -24,6 +26,7 @@ fun TaskList(
     taskListViewModel: TaskListViewModel = hiltViewModel()
 ){
     val items = taskListViewModel.taskList.observeAsState()
+    val service = NotificationService(LocalContext.current)
 
     Scaffold(
         floatingActionButton = {
@@ -40,6 +43,7 @@ fun TaskList(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+
             items(
                 items = items.value?: emptyList(),
                 key = { task -> task.id!!}
@@ -51,7 +55,8 @@ fun TaskList(
                         },
                     task = task,
                     onCheckedChange = { checked ->  taskListViewModel.changeTaskChecked(task, checked)},
-                    onDeleteTask = { taskListViewModel.deleteTask(task) }
+                    onDeleteTask = { taskListViewModel.deleteTask(task) },
+                    service = service
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -64,7 +69,8 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     task: TaskEntity,
     onCheckedChange: (Boolean) -> Unit,
-    onDeleteTask: () -> Unit
+    onDeleteTask: () -> Unit,
+    service: NotificationService
 ){
     Card(
         modifier = modifier
@@ -82,6 +88,11 @@ fun TaskItem(
                 Spacer(modifier = modifier.height(8.dp))
                 Text(text = task.details)
                 Text(text = task.expireDate)
+            }
+            Button(onClick = {
+                service.showNotification(task)
+            } ) {
+                Text(text = "Show notification")
             }
             Column(
                 modifier = Modifier,

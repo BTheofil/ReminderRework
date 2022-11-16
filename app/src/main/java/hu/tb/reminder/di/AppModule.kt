@@ -34,12 +34,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTaskUseCases(repository: TaskRepository): TaskUseCase {
-        return TaskUseCase(
-            getTasks = GetTasks(repository),
-            deleteTask = DeleteTask(repository),
-            saveTask = SaveTask(repository),
-            getTask = GetTask(repository),
-        )
+    fun provideUseCases(repository: TaskRepository): TaskUseCase {
+        return TaskUseCase(repository)
     }
 }
