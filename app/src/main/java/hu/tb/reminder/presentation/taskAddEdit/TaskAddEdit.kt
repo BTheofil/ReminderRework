@@ -15,9 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vanpra.composematerialdialogs.MaterialDialog
@@ -25,6 +28,8 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import hu.tb.reminder.presentation.taskAddEdit.components.OpenDialogPicker
+import hu.tb.reminder.presentation.taskAddEdit.components.RepeatSelectionWidget
+import hu.tb.reminder.presentation.taskAddEdit.components.TaskNotifyRepeatTime
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 import java.time.LocalTime
@@ -96,6 +101,9 @@ fun TaskAddEditScreen(
                         )
                     )
                 },
+                onRepeatPeriodValueChange = {
+                    viewModel.onEvent(TaskAddEditEvent.OnRepeatTimeChange(it))
+                }
             )
         }
     )
@@ -112,125 +120,165 @@ private fun TaskAddEditForm(
     expirationTime: (LocalTime) -> Unit,
     onTitleValueChange: (String) -> Unit,
     onDescriptionValueChange: (String) -> Unit,
+    onRepeatPeriodValueChange: (TaskNotifyRepeatTime) -> Unit
 ) {
+    val constraints = ConstraintSet {
+        val card = createRefFor("card")
+        val dateTimePickers = createRefFor("pickers")
+        val repeatButtons = createRefFor("repeatBtn")
+
+        constrain(card){
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+
+        constrain(dateTimePickers){
+            top.linkTo(card.bottom)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+
+        constrain(repeatButtons){
+            top.linkTo(dateTimePickers.bottom)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+    }
+    
     var isTitleFocused by remember { mutableStateOf(true) }
     var isDescriptionFocused by remember { mutableStateOf(true) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top
+    val dialogState = rememberMaterialDialogState()
+    MaterialDialog(
+        dialogState = dialogState,
+        buttons = {
+            positiveButton("Ok")
+            negativeButton("Cancel")
+        }
     ) {
-        val dialogState = rememberMaterialDialogState()
-        MaterialDialog(
-            dialogState = dialogState,
-            buttons = {
-                positiveButton("Ok")
-                negativeButton("Cancel")
-            }
-        ) {
-            datepicker(
-                onDateChange = expirationDate
-            )
-        }
-
-        val dialogTimeState = rememberMaterialDialogState()
-        MaterialDialog(
-            dialogState = dialogTimeState,
-            buttons = {
-                positiveButton("Ok")
-                negativeButton("Cancel")
-            }
-        ) {
-            timepicker(
-                onTimeChange = expirationTime
-            )
-        }
-
-        OpenDialogPicker(
-            selectedDate = expirationDateText,
-            onClick = {
-                dialogState.show()
-            }
+        datepicker(
+            onDateChange = expirationDate
         )
+    }
 
-        OpenDialogPicker(
-            selectedDate = expirationTimeText,
-            onClick = {
-                dialogTimeState.show()
-            }
+    val dialogTimeState = rememberMaterialDialogState()
+    MaterialDialog(
+        dialogState = dialogTimeState,
+        buttons = {
+            positiveButton("Ok")
+            negativeButton("Cancel")
+        }
+    ) {
+        timepicker(
+            onTimeChange = expirationTime
         )
+    }
 
-        Row(
-            modifier = Modifier,
-            horizontalArrangement = Arrangement.Center
+    ConstraintLayout(constraints, Modifier.fillMaxSize()) {
+        Column(
+            modifier = modifier
+                .padding(16.dp)
+                .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
+                .padding(16.dp)
+                .layoutId("card"),
+            verticalArrangement = Arrangement.Top
         ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp),
-                imageVector = Icons.Rounded.KeyboardArrowRight,
-                contentDescription = ""
-            )
-            BasicTextField(
-                modifier = Modifier.onFocusChanged { focusState ->
-                    isTitleFocused = when {
-                        focusState.isFocused -> {
-                            true
+            Row(
+                modifier = Modifier,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    imageVector = Icons.Rounded.KeyboardArrowRight,
+                    contentDescription = ""
+                )
+                BasicTextField(
+                    modifier = Modifier.onFocusChanged { focusState ->
+                        isTitleFocused = when {
+                            focusState.isFocused -> {
+                                true
+                            }
+                            else -> {
+                                false
+                            }
                         }
-                        else -> {
-                            false
+                    },
+                    value = titleText,
+                    onValueChange = onTitleValueChange,
+                    singleLine = true,
+                    textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                    decorationBox = { innerTextField ->
+                        Row(modifier = Modifier) {
+                            if (!isTitleFocused && titleText.isEmpty()) {
+                                Text("Title your task...")
+                            }
+                            innerTextField()
                         }
                     }
-                },
-                value = titleText,
-                onValueChange = onTitleValueChange,
-                singleLine = true,
-                textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                )
+            }
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color.LightGray)
+            )
+            BasicTextField(
+                modifier = Modifier
+                    .onFocusChanged { focusState ->
+                        isDescriptionFocused = when {
+                            focusState.isFocused -> {
+                                true
+                            }
+                            else -> {
+                                false
+                            }
+                        }
+                    }
+                    .padding(
+                        start = 24.dp,
+                        top = 8.dp
+                    ),
+                value = descriptionText,
+                onValueChange = onDescriptionValueChange,
                 decorationBox = { innerTextField ->
                     Row(modifier = Modifier) {
-                        if (!isTitleFocused && titleText.isEmpty()) {
-                            Text("Title your task...")
+                        if (!isDescriptionFocused && descriptionText.isEmpty()) {
+                            Text("Description your task...")
                         }
                         innerTextField()
                     }
                 }
             )
         }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.LightGray)
-        )
-        BasicTextField(
-            modifier = Modifier
-                .onFocusChanged { focusState ->
-                    isDescriptionFocused = when {
-                        focusState.isFocused -> {
-                            true
-                        }
-                        else -> {
-                            false
-                        }
-                    }
+
+        Row(Modifier
+            .layoutId("pickers")
+        ) {
+            OpenDialogPicker(
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                selectedDate = expirationDateText,
+                onClick = {
+                    dialogState.show()
                 }
-                .padding(
-                    start = 24.dp,
-                    top = 8.dp
-                ),
-            value = descriptionText,
-            onValueChange = onDescriptionValueChange,
-            decorationBox = { innerTextField ->
-                Row(modifier = Modifier) {
-                    if (!isDescriptionFocused && descriptionText.isEmpty()) {
-                        Text("Description your task...")
-                    }
-                    innerTextField()
+            )
+
+            OpenDialogPicker(
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                selectedDate = expirationTimeText,
+                onClick = {
+                    dialogTimeState.show()
                 }
-            }
+            )
+        }
+
+        RepeatSelectionWidget(
+            modifier = Modifier.layoutId("repeatBtn"),
+            taskNotifyRepeatTime = onRepeatPeriodValueChange
         )
     }
+
 }
+

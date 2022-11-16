@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.tb.reminder.domain.model.TaskEntity
 import hu.tb.reminder.domain.use_case.TaskUseCase
 import hu.tb.reminder.presentation.taskAddEdit.TaskAddEditEvent.*
+import hu.tb.reminder.presentation.taskAddEdit.components.TaskNotifyRepeatTime
 import hu.tb.reminder.presentation.taskAddEdit.notify.AlarmReceiver
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -45,6 +46,8 @@ class TaskAddEditViewModel @Inject constructor(
 
     var expirationTime by mutableStateOf<LocalTime?>(null)
         private set
+
+    private var repeatTime by mutableStateOf<TaskNotifyRepeatTime?>(null)
 
     private val _eventFlow = MutableSharedFlow<TaskAddEditState>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -103,6 +106,10 @@ class TaskAddEditViewModel @Inject constructor(
             }
             is OnExpirationTimeChange -> {
                 expirationTime = event.expirationTime
+            }
+
+            is OnRepeatTimeChange -> {
+                repeatTime = event.notifyRepeatTime
             }
         }
     }

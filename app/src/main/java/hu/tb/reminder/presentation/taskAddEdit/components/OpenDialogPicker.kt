@@ -19,12 +19,13 @@ import androidx.constraintlayout.compose.Dimension
 
 @Composable
 fun OpenDialogPicker(
+    modifier: Modifier,
     selectedDate: String,
     onClick: () -> Unit
 ) {
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .wrapContentSize(Alignment.TopStart)
             .padding(top = 10.dp)
             .border(BorderStroke(0.5.dp, Color.LightGray))
@@ -34,7 +35,7 @@ fun OpenDialogPicker(
     ) {
 
         ConstraintLayout(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
