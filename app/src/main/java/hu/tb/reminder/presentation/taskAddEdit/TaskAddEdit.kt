@@ -29,7 +29,7 @@ import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import hu.tb.reminder.presentation.taskAddEdit.components.OpenDialogPicker
 import hu.tb.reminder.presentation.taskAddEdit.components.RepeatSelectionWidget
-import hu.tb.reminder.presentation.taskAddEdit.components.TaskNotifyRepeatTime
+import hu.tb.reminder.domain.model.TaskNotifyRepeatTime
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 import java.time.LocalTime
@@ -274,6 +274,7 @@ private fun TaskAddEditForm(
             )
         }
 
+        //todo do something
         RepeatSelectionWidget(
             modifier = Modifier.layoutId("repeatBtn"),
             taskNotifyRepeatTime = onRepeatPeriodValueChange

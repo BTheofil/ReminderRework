@@ -20,24 +20,27 @@ import javax.inject.Inject
 class TaskListViewModel @Inject constructor(
     private val taskUseCase: TaskUseCase,
     private val application: Application
-): ViewModel() {
+) : ViewModel() {
 
     val taskList: LiveData<List<TaskEntity>> = taskUseCase.getTaskList()
 
     fun changeTaskChecked(item: TaskEntity, checked: Boolean) {
         viewModelScope.launch {
-            taskUseCase.saveTask(TaskEntity(
-                id = item.id,
-                title = item.title,
-                details = item.details,
-                isDone = checked,
-                expireDate = item.expireDate,
-                expireTime = item.expireTime
-            ))
+            taskUseCase.saveTask(
+                TaskEntity(
+                    id = item.id,
+                    title = item.title,
+                    details = item.details,
+                    isDone = checked,
+                    expireDate = item.expireDate,
+                    expireTime = item.expireTime,
+                    repeatTime = item.repeatTime
+                )
+            )
         }
     }
 
-    fun deleteTask(taskEntity: TaskEntity){
+    fun deleteTask(taskEntity: TaskEntity) {
         viewModelScope.launch {
             taskUseCase.deleteTask(taskEntity)
             val alarmManager = application.getSystemService(Context.ALARM_SERVICE) as AlarmManager

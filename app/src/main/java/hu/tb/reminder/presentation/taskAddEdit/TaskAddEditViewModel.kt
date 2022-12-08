@@ -15,7 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.tb.reminder.domain.model.TaskEntity
 import hu.tb.reminder.domain.use_case.TaskUseCase
 import hu.tb.reminder.presentation.taskAddEdit.TaskAddEditEvent.*
-import hu.tb.reminder.presentation.taskAddEdit.components.TaskNotifyRepeatTime
+import hu.tb.reminder.domain.model.TaskNotifyRepeatTime
 import hu.tb.reminder.presentation.taskAddEdit.notify.AlarmReceiver
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -79,20 +79,22 @@ class TaskAddEditViewModel @Inject constructor(
             is OnSaveTodoClick -> {
                 viewModelScope.launch {
                     if(title.isNotEmpty() ){
-
+                        if(repeatTime == null){
+                            repeatTime = TaskNotifyRepeatTime.ONETIME
+                        }
                         val task = TaskEntity(
                             id = task?.id,
                             title = title,
                             details = description,
                             isDone = false,
-                            expireDate = expirationDate.toString(),
-                            expireTime = expirationTime.toString()
+                            expireDate = expirationDate.toString(), //todo null check
+                            expireTime = expirationTime.toString(), //todo null check
+                            repeatTime = repeatTime!!
                         )
 
                         val id = taskUseCase.saveTask(task)
-                        if(expirationDate != null && expirationTime != null){
-                            setAlarm(taskUseCase.getTaskById(id.toInt())!!)
-                        }
+                        setAlarm(taskUseCase.getTaskById(id.toInt())!!)
+
                         _eventFlow.emit(TaskAddEditState.SaveNote)
                     } else {
                         _eventFlow.emit(TaskAddEditState.ShowSnackBar)

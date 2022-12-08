@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hu.tb.reminder.data.data_source.TaskDatabase
 import hu.tb.reminder.data.repository.TaskRepositoryImpl
+import hu.tb.reminder.domain.model.Converters
 import hu.tb.reminder.domain.repository.TaskRepository
 import hu.tb.reminder.domain.use_case.*
 import javax.inject.Singleton
@@ -23,7 +24,9 @@ object AppModule {
             app,
             TaskDatabase::class.java,
             TaskDatabase.DATABASE_NAME
-        ).build()
+        )
+            .addTypeConverter(Converters())
+            .build()
     }
 
     @Provides

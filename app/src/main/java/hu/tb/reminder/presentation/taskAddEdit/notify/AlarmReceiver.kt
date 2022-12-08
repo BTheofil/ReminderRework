@@ -17,7 +17,7 @@ class AlarmReceiver : BroadcastReceiver() {
                     NotificationService(context).showNotification(task!!)
                 }
             } else {
-                val task = intent.getSerializableExtra("key") as TaskEntity
+                val task = intent.extras?.getSerializable("key") as TaskEntity
                 if (context != null) {
                     NotificationService(context).showNotification(task)
                 }

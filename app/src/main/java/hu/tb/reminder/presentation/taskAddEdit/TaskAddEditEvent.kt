@@ -1,6 +1,6 @@
 package hu.tb.reminder.presentation.taskAddEdit
 
-import hu.tb.reminder.presentation.taskAddEdit.components.TaskNotifyRepeatTime
+import hu.tb.reminder.domain.model.TaskNotifyRepeatTime
 import java.time.LocalDate
 import java.time.LocalTime
 
